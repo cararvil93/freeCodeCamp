@@ -1,0 +1,41 @@
+NUMBER_OF_DISKS = 5
+A = list(range(NUMBER_OF_DISKS, 0, -1))
+B = []
+C = []
+
+
+def move(n, source, auxiliary, target):
+    """
+    Solve the Tower of Hanoi puzzle using recursive moves.
+
+    This function implements the solution to the Tower of Hanoi puzzle,
+    moving a stack of disks from one peg to another using a third peg as
+    an auxiliary, following the rules of the game.
+
+    Parameters:
+    n (int): The number of disks to move.
+    source (list): The starting peg, containing the disks to be moved.
+    auxiliary (list): The auxiliary peg used for temporary disk storage.
+    target (list): The destination peg where the disks should end up.
+
+    Returns:
+    None. The function modifies the input lists in-place and prints the state
+    of the pegs after each move.
+    """
+    if n <= 0:
+        return
+    # move n - 1 disks from source to auxiliary, so they are out of the way
+    move(n - 1, source, target, auxiliary)
+
+    # move the nth disk from source to target
+    target.append(source.pop())
+
+    # display our progress
+    print(A, B, C, "\n")
+
+    # move the n - 1 disks that we left on auxiliary onto target
+    move(n - 1, auxiliary, source, target)
+
+
+# initiate call from source A to target C with auxiliary B
+move(NUMBER_OF_DISKS, A, B, C)
