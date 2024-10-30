@@ -1,0 +1,116 @@
+class Category:
+    def __init__(self, category):
+        self.category = category
+        self.ledger = []
+
+    def __str__(self):
+        output_str = []
+        output_str.append(f"{self.category:*^30}")
+
+        for i, move in enumerate(self.ledger):
+            description = move["description"][:23]
+            amount = f"{move['amount']:7.2f}"
+            output_str.append(f"{description:<23}{amount}")
+
+        output_str.append(f"Total: {self.get_balance()}")
+
+        return str("\n".join(output_str))
+
+    # Includes a dictionary entry in self.ledger stating the amount desposited and an optional description
+    def deposit(self, amount, description=""):
+        deposit = {"amount": amount, "description": description}
+        self.ledger.append(deposit)
+
+    # Includes a dictionary entry in self.ledger stating the amount withdrawed and an optional description
+    def withdraw(self, amount, description=""):
+        if not self.check_funds(amount):
+            return False
+        withdraw = {"amount": -1 * amount, "description": description}
+        self.ledger.append(withdraw)
+        return True
+
+    # Returns the current balance for the category
+    def get_balance(self):
+        balance = sum(move["amount"] for move in self.ledger)
+        return balance
+
+    # Transfer an amount from the current category to another one
+    def transfer(self, amount, alt_category):
+        if self.check_funds(amount):
+            description_to = f"Transfer to {alt_category.category}"
+            description_from = f"Transfer from {self.category}"
+            self.withdraw(amount, description_to)
+            alt_category.deposit(amount, description_from)
+            return True
+        return False
+
+    # Checks if a given amount is lower than the current balance; if so, returns True. If not, returns false
+    def check_funds(self, amount):
+        if amount > self.get_balance():
+            return False
+        return True
+
+
+def create_spend_chart(categories):
+    # First compute expenses per category
+    expenses_all_categories = []
+    for category in categories:
+        expenses_category = 0
+        for move in category.ledger:
+            if move["amount"] < 0:
+                expenses_category += move["amount"]
+        expenses_all_categories.append(
+            {"category": category, "expenses": expenses_category}
+        )
+
+    # Compute total expenses
+    total_expenses = sum(category["expenses"] for category in expenses_all_categories)
+    print(total_expenses)
+
+    # Compute the fraction of each expense rounded to the neares ten
+    fraction_expenses = []
+    for category in expenses_all_categories:
+        expense = (category["expenses"] / total_expenses) * 100
+        fraction_expenses.append(abs(round(expense)))
+    print(fraction_expenses)
+
+    # Print everything
+
+    output_str = []
+    output_str.append(f"Percentage spent by category")
+
+    for i in range(100, -10, -10):
+        expense_symbol = []
+        for expense in fraction_expenses:
+            if expense >= i:
+                expense_symbol.append("o")
+            else:
+                expense_symbol.append(" ")
+        output_str.append(f"{i:>3}| {'  '.join(expense_symbol)}  ")
+
+    output_str.append("    " + (3 * len(categories)) * "-" + "-")
+
+    for i in range(max(len(category.category) for category in categories)):
+        character_list = []
+        for category in categories:
+            try:
+                character_list.append(category.category[i])
+            except:
+                character_list.append(" ")
+        output_str.append(f"     {'  '.join(character_list)}  ")
+
+    return str("\n".join(output_str))
+
+
+food = Category("Food")
+clothes = Category("Clothing")
+videogames = Category("Auto")
+business = Category("Business")
+
+food.deposit(900, "For groceries")
+clothes.deposit(100)
+clothes.withdraw(100)
+food.withdraw(100)
+
+
+print(create_spend_chart([food, clothes, videogames, business]))
